@@ -1,0 +1,21 @@
+{
+  "name": "payfort/DirectLink",
+  "description": "DirectLink allows you to set up customised links between your applications and our system",
+  "authors": [
+      {
+        "name": "Ahmed Alawady",
+        "email": "ahmed.m.alawady@gmail.com"
+      }
+    ],
+  "keywords": ["payfort", "DirectLink", "payments", "online payments","DirectLink","DirectLink-3-D"],
+  "require": {},
+  "require-dev": {
+    "phpunit/phpunit": "4.2.*"
+  },
+  "lib-curl": "*",
+  "autoload": {
+    "psr-0": {
+      "DirectLink": "src/"
+    }
+  }
+}
