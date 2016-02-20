@@ -70,9 +70,9 @@ class DirectLink {
      * @param string $securityType as security Type (sha256, sha128, sha512)
      * @return string signature
      */
-    public function calculateFortSignature($shaRequestPharse, $securityType) {
+    public static function calculateFortSignature($shaRequestPharse, $securityType) {
         
-        $requestParams = $this->getRequestParams();
+        $requestParams = self::getRequestParams();
 
         ksort($requestParams);
         $concatedStr = '';
@@ -102,7 +102,7 @@ class DirectLink {
      * 
      * @return array of $requestParams
      */
-    public function getRequestParams()
+    function getRequestParams()
     {
 
         $requestParams =   array(
@@ -148,7 +148,7 @@ class DirectLink {
      * @param aray $requestParams order request parameters
      * @param string $action as fortm action
      */
-    function charge($testMode, $requestParams = array(), $action = 'POST')
+    public static function  charge($testMode, $requestParams = array(), $action = 'POST')
     {
         if ($testMode) {
             //sandBox redirection
@@ -158,7 +158,7 @@ class DirectLink {
             $url = 'https://secure.payfort.com/ncol/prod/';
         }
 
-        $requestParams = $this->getRequestParams();
+        $requestParams = self::getRequestParams();
 
     }
 
@@ -170,7 +170,7 @@ class DirectLink {
      * @throws Exception
      */
 
-    public static function makeRequest($url, $data = array()) {
+    public function makeRequest($url, $data = array()) {
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
