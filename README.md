@@ -1,1 +1,1 @@
-# payfort/DirectLink
+# payfort-DirectLink
