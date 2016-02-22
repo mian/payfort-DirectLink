@@ -61,7 +61,7 @@ class DirectLink {
     public $HTTPAccept;  //The Accept request header field in the card holder browser. Accept
     public $Win3DS;  //Way to show the identification page to the customer. Possible
     public $acceptURL;  //Way to show the identification page to the customer. Possible
-
+    public $HTTPUserAgent; //Mozilla/4.0
     /**
      * calculate fort signature
      * 
@@ -123,7 +123,7 @@ class DirectLink {
             'FLAG3D'            => $this->Flag3D,
 
             'HTTP_ACCEPT'            => $this->HTTPAccept,
-
+            'HTTP_USER_AGENT'         => $this->HTTPUserAgent,
             'OPERATION'            => $this->operation,
             'ORDERID'              => $this->orderID,
 
