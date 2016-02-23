@@ -173,7 +173,7 @@ class DirectLink {
             //production redirect
             $url = 'https://secure.payfort.com/ncol/prod/';
         }
-        $this->makeRequest($url,$requestParams);
+        return $this->makeRequest($url,$requestParams);
     }
 
     /**
