@@ -64,28 +64,28 @@ class DirectLink {
     public $HTTPUserAgent; //Mozilla/4.0
     /**
      * calculate fort signature
-     * 
+     *
      * @param array $requestParams order request parameters
      * @param string $shaRequestPharse as Request encryption Pharse
      * @param string $securityType as security Type (sha256, sha128, sha512)
      * @return string signature
      */
-    public static function calculateFortSignature($shaRequestPharse, $securityType) {
-        
-        $requestParams = self::getRequestParams();
+    public  function calculateFortSignature($shaRequestPharse, $securityType) {
+
+        $requestParams = $this->getRequestParams();
 
         ksort($requestParams);
         $concatedStr = '';
-        foreach($requestParams as $key => $value) 
+        foreach($requestParams as $key => $value)
         {
             if($value != ''){
-                $concatedStr .= strtolower($key).'='.$value;
+                $concatedStr .= $key.'='.$value.$shaRequestPharse;
             }
         }
 
-        $concatedStr = $shaRequestPharse.$concatedStr.$shaRequestPharse;
-        
-        if($securityType == 'sha256') {
+        if($securityType == 'sha1'){
+            $signature = sha1($concatedStr);
+        }elseif($securityType == 'sha256') {
             $signature = hash('sha256', $concatedStr);
         } elseif ($securityType == 'sha128'){
             $signature = sha1($concatedStr);
@@ -93,13 +93,23 @@ class DirectLink {
             $signature = hash('sha512', $concatedStr);
         }
 
-
         return $signature;
     }
-    
+
+    public function handleParameters($parameters){
+        if(!empty($parameters)){
+            $newParameters='';
+            foreach($parameters as $key=>$value){
+                $newParameters .=$key.'='.$value.'&';
+            }
+            $newParameters= substr($newParameters,0,strlen($newParameters)-1);
+            return $newParameters;
+        }
+        return false;
+    }
     /**
      * genarate array of request Params
-     * 
+     *
      * @return array of $requestParams
      */
     function getRequestParams()
@@ -135,20 +145,26 @@ class DirectLink {
 
             'USERID'   => $this->userId,
             'WIN3DS'            => $this->Win3DS,
-         //   'SHASIGN'            => $this->signature,
+            //   'SHASIGN'            => $this->signature,
         );
-      
-       return $requestParams;
+        $nonEmptyParams=array();
+        foreach($requestParams as $key => $value)
+        {
+            if($value != ''){
+                $nonEmptyParams[$key] = $value;
+            }
+        }
+        return $nonEmptyParams;
     }
-    
+
     /**
-     * redirect to fort payment page 
-     * 
+     * redirect to fort payment page
+     *
      * @param boolean $testMode (true, false) , if test mode is true the redirect will be to the sandBox else will be to the production
      * @param aray $requestParams order request parameters
      * @param string $action as fortm action
      */
-    public static function  charge($testMode, $requestParams = array(), $action = 'POST')
+    public function  charge($testMode, $requestParams = array(), $action = 'POST')
     {
         if ($testMode) {
             //sandBox redirection
@@ -157,9 +173,7 @@ class DirectLink {
             //production redirect
             $url = 'https://secure.payfort.com/ncol/prod/';
         }
-
-        $requestParams = self::getRequestParams();
-
+        $this->makeRequest($url,$requestParams);
     }
 
     /**
@@ -171,33 +185,30 @@ class DirectLink {
      */
 
     public function makeRequest($url, $data = array()) {
-
+        $agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_8_3) AppleWebKit/537.31 (KHTML, like Gecko) Chrome/26.0.1410.65 Safari/537.31';
         $ch = curl_init();
+        curl_setopt($ch, CURLOPT_USERAGENT, $agent);
         curl_setopt($ch, CURLOPT_URL, $url);
         if (!empty($data)) {
             curl_setopt($ch, CURLOPT_POST, true);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-            curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/x-www-form-urlencoded'));
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $this->handleParameters($data));
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type:application/x-www-form-urlencoded'));
         }
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         $result = simplexml_load_string(curl_exec($ch));
-        dd($result);
+
         // Check for errors and such. 50001111
         $info = curl_getinfo($ch);
         $errno = curl_errno($ch);
-        if($result['NCERROR']=="50001111"){
-            $exception_message="Data validation error";
+        $error=(int)$result['NCERROR'][0];
+        if($error != 0){
+            include 'errors.php';
+            $exception_message=$allErrors[$error];
             throw new Exception($exception_message);
-        }else if ($info['http_code'] < 200 || $info['http_code'] > 299) {
-            // Got a non-200 error code.
-            Start::handleErrors($result, $info['http_code']);
         }
         curl_close($ch);
-        dd($result);
-
         return $result;
     }
 
-    
+
 }
